@@ -20,10 +20,9 @@ public class BaseSteps extends BrowserSetup {
     ConfigProperties config = new ConfigProperties();
 
     public BaseSteps() throws Exception {
-        config.setParam("node", "10.0.75.1");
         config.setParam("browser", "firefox");
         config.setParam("platform", "LINUX");
-        openBrowser(config.getParam("node"), config.getParam("platform"), config.getParam("browser"), "https://www.costa.co.uk/");
+        openBrowser("10.0.75.1", config.getParam("platform"), config.getParam("browser"), "https://www.costa.co.uk/");
         new HomePage(driver).verifyHomePageLinks();
     }
 
