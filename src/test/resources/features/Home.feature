@@ -1,7 +1,7 @@
 @Search
 Feature: user enters text in search box and hints are displayed
 
-  Scenario Outline: user navigates to costa web page
+  Scenario Outline: User navigates to Costa HomePage
     Given I'm on costa web page
     When I hover on tab <tab>
     Then I get popup with further options
@@ -11,7 +11,7 @@ Feature: user enters text in search box and hints are displayed
     |Coffee Club|
     |Responsibility|
 
-  Scenario Outline: : user enters text in search box
+  Scenario Outline: User enters location in SearchBox
 
     Given I hover on tab <tab>
     When I enter text in search box <search_text>
