@@ -9,6 +9,7 @@ import org.openqa.selenium.By;
 import pages.HomePage;
 import pages.StoreLocatorPage;
 import support.BrowserSetup;
+import support.ConfigProperties;
 
 /**
  * Created by SPasham on 27/04/2018.
@@ -16,10 +17,13 @@ import support.BrowserSetup;
 
 public class BaseSteps extends BrowserSetup {
 
+    ConfigProperties config = new ConfigProperties();
+
     public BaseSteps() throws Exception {
-        //openBrowser("firefox", "https://www.costa.co.uk/");
-        //openBrowser("10.0.75.1", "chrome", "https://www.costa.co.uk/");
-        openBrowser("10.0.75.1","firefox", "https://www.costa.co.uk/");
+        config.setParam("node", "10.0.75.1");
+        config.setParam("browser", "firefox");
+        config.setParam("platform", "LINUX");
+        openBrowser(config.getParam("node"), config.getParam("platform"), config.getParam("browser"), "https://www.costa.co.uk/");
         new HomePage(driver).verifyHomePageLinks();
     }
 
