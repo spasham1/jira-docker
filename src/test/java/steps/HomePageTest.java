@@ -1,4 +1,4 @@
-package stepdefs;
+package steps;
 
 import cucumber.api.java.After;
 import cucumber.api.java.en.And;
@@ -15,11 +15,11 @@ import support.ConfigProperties;
  * Created by SPasham on 27/04/2018.
  */
 
-public class BaseSteps extends BrowserSetup {
+public class HomePageTest extends BrowserSetup {
 
     ConfigProperties config = new ConfigProperties();
 
-    public BaseSteps() throws Exception {
+    public HomePageTest() throws Exception {
         config.setParam("browser", "firefox");
         config.setParam("platform", "LINUX");
         openBrowser("10.0.75.1", config.getParam("platform"), config.getParam("browser"), "https://www.costa.co.uk/");
