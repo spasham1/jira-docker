@@ -15,13 +15,13 @@ import support.ConfigProperties;
  * Created by SPasham on 27/04/2018.
  */
 
-public class HomePageTest extends BrowserSetup {
+public class BaseSteps extends BrowserSetup {
 
     ConfigProperties config = new ConfigProperties();
 
-    public HomePageTest() throws Exception {
+    public BaseSteps() throws Exception {
         config.setParam("browser", "firefox");
-        config.setParam("platform", "LINUX");
+        config.setParam("platform", "WINDOWS");
         openBrowser("10.0.75.1", config.getParam("platform"), config.getParam("browser"), "https://www.costa.co.uk/");
         new HomePage(driver).verifyHomePageLinks();
     }
