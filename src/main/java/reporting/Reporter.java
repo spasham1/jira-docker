@@ -1,4 +1,4 @@
-package support;
+package reporting;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -23,7 +23,7 @@ import org.w3c.dom.NodeList;
     Author: spasham 02/05/18
     NOTE: running this file
     mvn clean install
-    mvn exec:java -Dexec.mainClass="support.Reporter" -Dexec.args="junit_report junit_xml target/report.xml 010"  -Dexec.cleanupDaemonThreads=false
+    mvn exec:java -Dexec.mainClass="reporting.Reporter" -Dexec.args="junit_report junit_xml target/report.xml 010"  -Dexec.cleanupDaemonThreads=false
     Or java -jar target\airbus-1.0-SNAPSHOT-jar-with-dependencies.jar junit_report junit_xml target/report_all_9.xml 010
 */
 
