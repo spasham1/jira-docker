@@ -47,12 +47,10 @@ public class BrowserSetup {
 	public void openBrowser(String node, String platform, String browser, String url) throws Exception {
 		String port = "4444";
 		if (browser.equalsIgnoreCase("chrome")) {
-			//capabilities = DesiredCapabilities.chrome();
 			ChromeOptions chrome_opts = new ChromeOptions();
 			capabilities.setCapability(ChromeOptions.CAPABILITY, chrome_opts); //remote
 		}
 		if (browser.equalsIgnoreCase("firefox")) {
-			//capabilities = DesiredCapabilities.firefox();
 			FirefoxOptions firefox_opts = new FirefoxOptions();
 			capabilities.setCapability(FirefoxOptions.FIREFOX_OPTIONS, firefox_opts); //remote
 		}
