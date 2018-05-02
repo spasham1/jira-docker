@@ -6,7 +6,7 @@ import org.openqa.selenium.By;
 import pages.HomePage;
 import pages.StoreLocatorPage;
 import support.BrowserSetup;
-import support.ConfigProperties;
+import setup.ConfigProperties;
 import ru.yandex.qatools.allure.annotations.Step;
 
 /**

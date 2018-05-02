@@ -1,4 +1,4 @@
-package reporting;
+package setup;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -23,7 +23,7 @@ import org.w3c.dom.NodeList;
     Author: spasham 02/05/18
     NOTE: running this file
     mvn clean install
-    mvn exec:java -Dexec.mainClass="reporting.Reporter" -Dexec.args="junit_report junit_xml target/report.xml 010"  -Dexec.cleanupDaemonThreads=false
+    mvn exec:java -Dexec.mainClass="setup.Reporter" -Dexec.args="junit_report junit_xml target/report.xml 010"  -Dexec.cleanupDaemonThreads=false
     Or java -jar target\airbus-1.0-SNAPSHOT-jar-with-dependencies.jar junit_report junit_xml target/report_all_9.xml 010
 */
 
@@ -37,10 +37,10 @@ public class Reporter {
     private static String database;
     private static String measurement;
     private static String xml_file;
-    private static String buildID;
-    private static String browser;
-    private static String platform;
-    private static String host;
+    public static String buildID;
+    public static String browser;
+    public static String platform;
+    public static String host;
 
     public String getHostName() throws Exception {
         InetAddress localMachine = InetAddress.getLocalHost();

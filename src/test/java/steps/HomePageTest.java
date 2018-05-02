@@ -6,7 +6,7 @@ import org.testng.annotations.*;
 import pages.HomePage;
 import pages.StoreLocatorPage;
 import support.BrowserSetup;
-import support.ConfigProperties;
+import setup.ConfigProperties;
 
 import java.lang.reflect.Method;
 
