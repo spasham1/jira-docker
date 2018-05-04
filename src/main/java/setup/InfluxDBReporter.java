@@ -20,14 +20,20 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /*
-    Author: spasham 02/05/18
+    Author: spasham 21/02/18
     NOTE: running this file
     mvn clean install
-    mvn exec:java -Dexec.mainClass="setup.Reporter" -Dexec.args="junit_report junit_xml target/report.xml 010"  -Dexec.cleanupDaemonThreads=false
-    Or java -jar target\airbus-1.0-SNAPSHOT-jar-with-dependencies.jar junit_report junit_xml target/report_all_9.xml 010
+    mvn exec:java -Dexec.mainClass="setup.InfluxDBReporter" -Dexec.args="http://localhost:8086 junit_report junit_xml temp/cucumber-result.xml 010 chrome"  -Dexec.cleanupDaemonThreads=false
+    Or java -jar target\influxdb.jar http://localhost:8086 junit_report junit_xml target/report_all_9.xml 010 chrome
+
+    exec:java -Dexec.mainClass="setup.InfluxDBReporter" -Dexec.args="http://localhost:8086 junit_report junit_xml temp/cucumber-result.xml 010 chrome"  -Dexec.cleanupDaemonThreads=false
+    (works when the variables are passed to the java class)
+
+    exec:java -Dexec.mainClass="setup.InfluxDBReporter" -Dinfluxdb_url=http://localhost:8086 -Ddatabase=junit_report -Dmeasurement=junit_xml -Dxml_file=temp/cucumber-result.xml -DbuildID=010 -Dbrowser=chrome"  -Dexec.cleanupDaemonThreads=false
+    (the above will work if global system enviroment variables (env.setParam) are set in the class instead of local variables inside the class)
 */
 
-public class Reporter {
+public class InfluxDBReporter {
 
     // Connect to InfluxDB
     private InfluxDB influxDB;
@@ -37,10 +43,10 @@ public class Reporter {
     private static String database;
     private static String measurement;
     private static String xml_file;
-    public static String buildID;
-    public static String browser;
-    public static String platform;
-    public static String host;
+    private static String buildID;
+    private static String browser;
+    private static String testName;
+    private static String testTime;
 
     public String getHostName() throws Exception {
         InetAddress localMachine = InetAddress.getLocalHost();
@@ -48,7 +54,7 @@ public class Reporter {
         return hostName;
     }
 
-    public static Reporter reporter;
+    public static InfluxDBReporter reporter;
 
     public void connectToInflux(String url, String user, String pass) throws InterruptedException  {
         this.influxDB = InfluxDBFactory.connect(url, user, pass);
@@ -90,6 +96,15 @@ public class Reporter {
         bp.point(constructPoint(measurement, value));
         //addField("value", value);
         influxDB.write(bp);
+        //System.out.println("Timer posted to InfluxDB");
+    }
+
+    public void writeToInfluxDB(String dbName, String measurement, long value) throws Exception {
+        BatchPoints bp = defaultPoints(dbName);
+        bp.point(constructPoint(measurement, value));
+        //addField("value", value);
+        influxDB.write(bp);
+        //System.out.println("Timer posted to InfluxDB");
     }
 
     private BatchPoints defaultPoints(String dbName) throws Exception {
@@ -101,6 +116,17 @@ public class Reporter {
                 .tag("Host", getHostName())
                 .build();
         return batchPoints;
+    }
+
+    private Point constructPoint(String measurement, long value) {
+        Point.Builder builder = Point.measurement(measurement)
+                .addField("Duration", Long.valueOf(value))
+                .addField("Value", value)
+                .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+        for (Map.Entry<String, String> tag : tags.entrySet()) {
+            builder = builder.tag(tag.getKey(), tag.getValue());
+        }
+        return builder.build();
     }
 
     private Point constructPoint(String measurement, String value) {
@@ -121,7 +147,7 @@ public class Reporter {
         tags.put(key, value);
     }
 
-    private void addXMLTags(String test, String status, String build, String browser, String platform, String host) throws Exception {
+    /*private void addXMLTags(String test, String status, String build) throws Exception {
         String testName=null;
         if(test.contains(" ")) {
             testName = test.substring(test.lastIndexOf(" ")).replaceAll(" ", "");
@@ -129,9 +155,59 @@ public class Reporter {
         addTag("TestName", testName);
         addTag("TestStatus", status);
         addTag("Build", build);
+    }*/
+
+    private void addXMLTags(String test, String status, String build, String browser) throws Exception {
+        if(test.contains(" ")) {
+            //testName = test.substring(test.lastIndexOf(" ")).replaceAll(" ", ""); //Used for Postman/Junit xml report
+            testName = test.replaceAll(" ", "_"); //Used for cucumber/junit/testng
+        }
+        System.out.println(testName+" : "+testTime);
+
+        addTag("TestName", testName);
+        addTag("TestStatus", status);
+        addTag("Build", build);
         addTag("Browser", browser);
-        addTag("Platform", platform);
-        addTag("Host", host);
+        addTag("Platform", System.getProperty("os.name"));
+        addTag("Host", getHostName());
+    }
+
+    private void postJunitResultsToInflux(String database, String measurement, String absolutePathToXMLFile) throws Exception {
+        File fXmlFile = new File(absolutePathToXMLFile);
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        Document doc = dBuilder.parse(fXmlFile);
+
+        doc.getDocumentElement().normalize();
+
+        NodeList nList = doc.getElementsByTagName("testcase");
+        for (int temp = 0; temp < nList.getLength(); temp++) {
+            Node nNode = nList.item(temp);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element eElement = (Element) nNode;
+                testName=eElement.getAttribute("name");
+                testTime =eElement.getAttribute("time");
+                //System.out.println(testName+" : "+testTime); //temporary moved to addXMLTags method
+
+                //Note: XML testcase time=0 denotes fail
+                if(eElement.getAttribute("time")=="0") {
+                    //failed immeditately
+                    addXMLTags(testName, "FAIL", buildID, browser);
+                    writeToInfluxDB(database, measurement, testTime);
+                } else {
+                    if(!eElement.hasChildNodes()) {
+                        addXMLTags(testName, "PASS", buildID, browser);
+                        writeToInfluxDB(database, measurement, testTime);
+                    } else {
+                        addXMLTags(testName, "FAIL", buildID, browser);
+                        writeToInfluxDB(database, measurement, testTime);
+                    }
+                }
+            }
+        }
+
+        //Notify
+        System.out.println("Test Results posted to InfluxDB/Grafana");
     }
 
     private void postXMLResultsToInflux(String database, String measurement, String pathToXMLFile) throws Exception {
@@ -151,20 +227,20 @@ public class Reporter {
                 //Note: XML testcase time=0 denotes fail
                 if(eElement.getAttribute("time")=="0") {
                     //failed immeditately
-                    addXMLTags(eElement.getAttribute("name"), "FAIL", buildID, browser, platform, host);
+                    addXMLTags(eElement.getAttribute("name"), "FAIL", buildID, browser);
                     writeToInfluxDB(database, measurement, eElement.getAttribute("time"));
                     System.out.println(eElement.getNodeName());
                 } else {
                     if(!eElement.hasChildNodes()) {
-                        addXMLTags(eElement.getAttribute("name"), "PASS", buildID, browser, platform, host);
+                        addXMLTags(eElement.getAttribute("name"), "PASS", buildID, browser);
                         writeToInfluxDB(database, measurement, eElement.getAttribute("time"));
                     } else {
                         //NodeList nChildNodes = eElement.getChildNodes();
                         if(eElement.getLastChild().getPreviousSibling().hasChildNodes()) {
-                            addXMLTags(eElement.getAttribute("name"), "FAIL", buildID, browser, platform, host);
+                            addXMLTags(eElement.getAttribute("name"), "FAIL", buildID, browser);
                             writeToInfluxDB(database, measurement, eElement.getAttribute("time"));
                         } else {
-                            addXMLTags(eElement.getAttribute("name"), "PASS", buildID, browser, platform, host);
+                            addXMLTags(eElement.getAttribute("name"), "PASS", buildID, browser);
                             writeToInfluxDB(database, measurement, eElement.getAttribute("time"));
                         }
                     }
@@ -183,16 +259,35 @@ public class Reporter {
     public void postXMLResults(String influxURL, String user, String pass, String database, String measurement, String pathToXML) throws Exception {
         try {
             connectToInflux(influxURL, user, pass);
-            postXMLResultsToInflux(database, measurement, pathToXML);
+            //postXMLResultsToInflux(database, measurement, pathToXML); //for publishing Postman/Newman junit type xml report
+            postJunitResultsToInflux(database, measurement, pathToXML);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    public void postXMLResults(String database, String measurement, String pathToXML) throws Exception {
+        connectToInflux();
+        postXMLResultsToInflux(database, measurement, pathToXML);
+    }
+
+//    public static void main(String []args) throws Exception {
+//        reporter = new InfluxDBReporter();
+//        influxdb_url="http://10.0.75.1:8086";
+//        database="junit_report";
+//        measurement="junit_xml";
+//        buildID="1234";
+//        browser="chrome";
+//        String file = "C:\\temp\\Jira-Docker\\src\\test\\resources\\TEST-steps.HomePageTest.xml";
+//        System.out.println(influxdb_url+"\n"+database+"\n"+measurement+"\n"+file+"\n"+buildID+"\n"+browser);
+//        reporter.postXMLResults(influxdb_url, database, measurement, file);
+//        reporter.deleteInfluxDB("junit_report");
+//    }
+
     public static void main(String[] args) throws Exception {
-        reporter = new Reporter();
-        if(args.length<8){
-            throw new IllegalArgumentException("[influxdb_url, database, measurement, pathToXML, buildID, browser, platform, host] are required !");
+        reporter = new InfluxDBReporter();
+        if(args.length<6){
+            throw new IllegalArgumentException("Following parameters <influxdb_url, database, measurement, junit_xml_path, buildID, browser> are required !");
         } else {
             influxdb_url=args[0];
             database = args[1];
@@ -200,8 +295,6 @@ public class Reporter {
             xml_file = args[3];
             buildID = args[4];
             browser = args[5];
-            platform = args[6];
-            host = args[7];
         }
         try {
             reporter.postXMLResults(influxdb_url, database, measurement, xml_file);
@@ -209,6 +302,12 @@ public class Reporter {
         } catch (FileNotFoundException e) {
             System.out.println("File not found! Please specify a valid path within the project directory");
         }
+        /*
+        NOTE: running this file
+        mvn clean install
+        mvn exec:java -Dexec.mainClass="setup.InfluxDBReporter" -Dexec.args="http://localhost:8086 junit_report junit_xml temp/cucumber-result.xml 010 chrome"  -Dexec.cleanupDaemonThreads=false
+        Or java -jar target\influxdb.jar http://localhost:8086 junit_report junit_xml target/report_all_9.xml 010 chrome
+         */
     }
 
 }
