@@ -126,9 +126,9 @@ public class BrowserSetup {
         return ((RemoteWebDriver) driver).getSessionId().toString();
     }
 
-    public String getGridNode(String hub) throws UnknownHostException
+    public String getNode(String hub) throws UnknownHostException
     {
-        String hostDetail = null;
+        String node = null;
         int port = 4444;
         String errorMsg = "Failed to acquire remote webdriver node and port info. Root cause: ";
 
@@ -136,24 +136,24 @@ public class BrowserSetup {
             HttpHost host = new HttpHost(hub, port);
             DefaultHttpClient client = new DefaultHttpClient();
             URL sessionURL = new URL("http://" + hub + ":" + port + "/grid/api/testsession?session=" + getSessionId());
-            System.out.println("URL is : "+sessionURL);
+            //System.out.println("URL is : "+sessionURL);
             BasicHttpEntityEnclosingRequest r = new BasicHttpEntityEnclosingRequest("POST", sessionURL.toExternalForm());
             HttpResponse response = client.execute(host, r);
             //JSONObject object = extractObject(response);
             //URL myURL = new URL(object.getString("proxyId"));
             JsonObject myjsonobject =extractObject(response);
             JsonElement url = myjsonobject.get("proxyId");
-            System.out.println(url.getAsString());
+            //System.out.println(url.getAsString());
             URL myURL = new URL(url.getAsString());
             if ((myURL.getHost() != null) && (myURL.getPort() != -1)) {
-                hostDetail = myURL.getHost();
+                node = myURL.getHost();
             }
 
         } catch (Exception e) {
             //logger.log(Level.SEVERE, errorMsg, e);
             throw new RuntimeException(errorMsg, e);
         }
-        return hostDetail;
+        return node;
     }
 
     private JsonObject extractObject(HttpResponse resp) throws IOException {
