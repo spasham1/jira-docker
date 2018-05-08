@@ -53,28 +53,6 @@ public class BrowserSetup {
 		getUrl(url);
     }
 
-//    public WebDriver driver(String node, String platform, String browser, String url) throws Exception {
-//        String port = "4444";
-//        if (browser.equalsIgnoreCase("chrome")) {
-//            ChromeOptions chrome_opts = new ChromeOptions();
-//            capabilities.setCapability(ChromeOptions.CAPABILITY, chrome_opts); //remote
-//        }
-//        if (browser.equalsIgnoreCase("firefox")) {
-//            FirefoxOptions firefox_opts = new FirefoxOptions();
-//            capabilities.setCapability(FirefoxOptions.FIREFOX_OPTIONS, firefox_opts); //remote
-//        }
-//        if(platform.equalsIgnoreCase("linux"))
-//            capabilities.setPlatform(Platform.LINUX);
-//        else if(platform.equalsIgnoreCase("windows"))
-//            capabilities.setPlatform(Platform.WINDOWS);
-//        else if(platform.equalsIgnoreCase("win10"))
-//            capabilities.setPlatform(Platform.WIN10);
-//        else if(platform.equalsIgnoreCase("")||platform.equalsIgnoreCase("ANY"))
-//            capabilities.setPlatform(Platform.ANY);
-//        driver = new RemoteWebDriver(new URL("http://"+node+":"+port+"/wd/hub"), capabilities);
-//        return driver;
-//    }
-
 	public void openBrowser(String node, String browser, String url) throws Exception {
 		openBrowser(node, "", browser, url);
 	}
@@ -110,18 +88,6 @@ public class BrowserSetup {
 		}
 	}
 
-	public String getHostPlatform() throws Exception {
-		return System.getProperty("os.name");
-		//Capabilities caps = ((RemoteWebDriver) driver).getCapabilities();
-		//return String.valueOf(caps.getPlatform());
-	}
-
-	public String getHostName() throws Exception {
-		InetAddress localMachine = InetAddress.getLocalHost();
-		String hostName = localMachine.getHostName();
-		return hostName;
-	}
-
 	public String getSessionId() {
         return ((RemoteWebDriver) driver).getSessionId().toString();
     }
@@ -136,21 +102,16 @@ public class BrowserSetup {
             HttpHost host = new HttpHost(hub, port);
             DefaultHttpClient client = new DefaultHttpClient();
             URL sessionURL = new URL("http://" + hub + ":" + port + "/grid/api/testsession?session=" + getSessionId());
-            //System.out.println("URL is : "+sessionURL);
             BasicHttpEntityEnclosingRequest r = new BasicHttpEntityEnclosingRequest("POST", sessionURL.toExternalForm());
             HttpResponse response = client.execute(host, r);
-            //JSONObject object = extractObject(response);
-            //URL myURL = new URL(object.getString("proxyId"));
             JsonObject myjsonobject =extractObject(response);
             JsonElement url = myjsonobject.get("proxyId");
-            //System.out.println(url.getAsString());
             URL myURL = new URL(url.getAsString());
             if ((myURL.getHost() != null) && (myURL.getPort() != -1)) {
                 node = myURL.getHost();
             }
 
         } catch (Exception e) {
-            //logger.log(Level.SEVERE, errorMsg, e);
             throw new RuntimeException(errorMsg, e);
         }
         return node;
@@ -166,8 +127,6 @@ public class BrowserSetup {
         rd.close();
         JsonParser parser = new JsonParser();
         JsonObject objToReturn = (JsonObject)parser.parse(s.toString());
-        //System.out.println(objToReturn.toString());
-        //System.out.println(objToReturn.get("proxyId"));
         return objToReturn;
     }
 }
