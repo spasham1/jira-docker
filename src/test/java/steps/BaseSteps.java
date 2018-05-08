@@ -21,8 +21,6 @@ public class BaseSteps extends BrowserSetup {
         config.setParam("browser", "firefox");
         config.setParam("platform", "WINDOWS");
         openBrowser("10.0.75.1", config.getParam("platform"), config.getParam("browser"), "https://www.costa.co.uk/");
-        config.setParam("host", getHostName());
-        config.setParam("host_platform", getHostPlatform());
         new HomePage(driver).verifyHomePageLinks();
     }
 

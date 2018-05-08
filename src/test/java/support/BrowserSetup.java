@@ -77,12 +77,10 @@ public class BrowserSetup {
 		}
 	}
 
-	public String getHostPlatform() throws Exception {
-		return System.getProperty("os.name");
-	}
+//	public String getHostPlatform() throws Exception {
+//		//return System.getProperty("os.name");
+//		Capabilities caps = ((RemoteWebDriver) driver).getCapabilities();
+//		return String.valueOf(caps.getPlatform());
+//	}
 
-	public String getHostName() throws Exception {
-		InetAddress localMachine = InetAddress.getLocalHost();
-		return localMachine.getHostName();
-	}
 }
