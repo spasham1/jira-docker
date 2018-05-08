@@ -166,8 +166,8 @@ public class BrowserSetup {
         rd.close();
         JsonParser parser = new JsonParser();
         JsonObject objToReturn = (JsonObject)parser.parse(s.toString());
-        System.out.println(objToReturn.toString());
-        System.out.println(objToReturn.get("proxyId"));
+        //System.out.println(objToReturn.toString());
+        //System.out.println(objToReturn.get("proxyId"));
         return objToReturn;
     }
 }
