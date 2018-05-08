@@ -1,6 +1,5 @@
 package support;
 
-import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -13,7 +12,6 @@ import org.junit.Assert;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
-import java.net.InetAddress;
 import java.net.URL;
 
 public class BrowserSetup {
@@ -49,10 +47,12 @@ public class BrowserSetup {
 	public void openBrowser(String node, String platform, String browser, String url) throws Exception {
 		String port = "4444";
 		if (browser.equalsIgnoreCase("chrome")) {
+			//capabilities = DesiredCapabilities.chrome();
 			ChromeOptions chrome_opts = new ChromeOptions();
 			capabilities.setCapability(ChromeOptions.CAPABILITY, chrome_opts); //remote
 		}
 		if (browser.equalsIgnoreCase("firefox")) {
+			//capabilities = DesiredCapabilities.firefox();
 			FirefoxOptions firefox_opts = new FirefoxOptions();
 			capabilities.setCapability(FirefoxOptions.FIREFOX_OPTIONS, firefox_opts); //remote
 		}
@@ -75,14 +75,5 @@ public class BrowserSetup {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-	public String getHostPlatform() throws Exception {
-		return System.getProperty("os.name");
-	}
-
-	public String getHostName() throws Exception {
-		InetAddress localMachine = InetAddress.getLocalHost();
-		return localMachine.getHostName();
 	}
 }
