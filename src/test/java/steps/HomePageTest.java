@@ -28,8 +28,9 @@ public class HomePageTest extends BrowserSetup {
 
     public HomePageTest() throws Exception {
         config.setParam("browser", "firefox");
-        config.setParam("platform", "WINDOWS");
+        config.setParam("platform", "LINUX");
         openBrowser("10.0.75.1", config.getParam("platform"), config.getParam("browser"), "https://www.costa.co.uk/");
+        config.setParam("node", getNode("10.0.75.1"));
         new HomePage(driver).verifyHomePageLinks();
     }
 
