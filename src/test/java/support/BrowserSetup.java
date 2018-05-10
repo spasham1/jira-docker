@@ -58,7 +58,7 @@ public class BrowserSetup {
 	}
 
 	public void openBrowser(String node, String platform, String browser, String url) throws Exception {
-		String port = "4446";
+		String port = "4444";
 		if (browser.equalsIgnoreCase("chrome")) {
 			ChromeOptions chrome_opts = new ChromeOptions();
 			capabilities.setCapability(ChromeOptions.CAPABILITY, chrome_opts); //remote
@@ -95,7 +95,7 @@ public class BrowserSetup {
     public String getNode(String hub) throws UnknownHostException
     {
         String node = null;
-        int port = 4446;
+        int port = 4444;
         String errorMsg = "Failed to acquire remote webdriver node and port info. Root cause: ";
 
         try {
